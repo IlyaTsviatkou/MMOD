@@ -61,7 +61,7 @@ class Statistics:
              range(1, self.__m + 1)]))
         print('\np0: {0}'.format(p0))
         for index in range(1, self.__n + 1):
-            print('p{0}: {1}'.format(index, (p0 * teta ** index) / math.factorial(index)))
+            print('p{0}: {1}'.format(index, (p0 * teta ** index) / math.factorial(index)))      
         pn = (p0 * teta ** self.__n) / math.factorial(self.__n)
         for index in range(1, self.__m + 1):
             print('p{0}: {1}'.format(self.__m + index - 1, pn * (teta ** index) / np.prod(

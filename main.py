@@ -5,10 +5,10 @@ import Statistics
 if __name__ == '__main__':
     time = 1000
     ######## values
-    _lambda = 8
+    _lambda = 10
     mu = 3
-    v = 4
-    m = 2
+    v = 6
+    m = 4   
     n = 3
     ########
 
