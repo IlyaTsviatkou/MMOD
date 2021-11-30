@@ -18,3 +18,4 @@ if __name__ == '__main__':
 
     Statistic = Statistics.Statistics(_lambda, mu, v, m, n, model.get_data())
     Statistic.generate()
+                    

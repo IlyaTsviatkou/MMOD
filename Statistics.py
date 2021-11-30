@@ -1,5 +1,10 @@
 import math
 import numpy as np
+from scipy.stats.stats import mode
+import simpy
+import Model
+import Statistics
+
 
 import matplotlib.pyplot as plt
 from scipy.stats import chisquare
@@ -102,6 +107,72 @@ class Statistics:
              index in range(1, self.__m + 1)])
     #####
 
+    def test_queuing_system(n, m, _lambda, mu, v, time):
+        env = simpy.Environment()
+        model = Model.Model(_lambda, mu, v, m, n, env)
+        env.run(time)
+        return model.get_data()
+
+    def steady_test(self):
+        n, m, lambd, mu, v = 2, 1, 1 , 1, 1
+        p = []
+        times = [i*50 for i in range(1,15)]
+        p0, p1, p2, p3 = [],[],[],[]
+        teta = lambd / mu
+        beta = v / mu
+        p = []
+        p.append(1 / (sum([(teta ** index) / math.factorial(index) for index in range(n + 1)]) + (
+                teta ** n) / math.factorial(n) * sum(
+            [(teta ** index) / np.prod(np.array([n + l * beta for l in range(1, index + 1)])) for index in
+             range(1, m + 1)])))
+        for index in range(1, n + 1):
+            p.append((p[0] * teta ** index) / math.factorial(index))
+        pn = p[-1]
+        for index in range(1, m + 1):
+            p.append(pn * (teta ** index) / np.prod(
+                np.array([n + l * beta for l in range(1, index + 1)])))
+        
+        for time in times:
+            env = simpy.Environment()
+            model = Model.Model(lambd, mu, v, m, n, env)
+            env.run(time)
+            test_results = model.get_data()
+            __stat = np.array(test_results[0])
+            __queue_list = np.array(test_results[1])
+            __total_requests = np.array(test_results[2])
+            __queue_time = np.array(test_results[3])
+            __total_time = np.array(test_results[4])
+            empirical_characteristic = [len(__stat[__stat == index]) / len(__stat) for index in range(n + m + 1)]
+            p0.append(empirical_characteristic[0])
+            p1.append(empirical_characteristic[1])
+            p2.append(empirical_characteristic[2])
+            p3.append(empirical_characteristic[3])
+        fig, (ax0, ax1, ax2, ax3) = plt.subplots(ncols=1, nrows=4, figsize=(16, 28), 
+                                         gridspec_kw={'height_ratios': [1, 1, 1, 1], 'width_ratios': [1]}
+                                        )
+        x = np.linspace(0, 10, 10000)
+
+        ax0.set_title('p0')
+        ax0.plot(times, [p[0]]*len(times), '-k')
+        ax0.fill_between(times, y1=p0, color='b', step='post', alpha=0.5)
+
+        ax1.set_title('p1')
+        ax1.plot(times, [p[1]]*len(times), '-k')
+        ax1.fill_between(times, y1=p1, color='r', step='post', alpha=0.5)
+
+
+        ax2.set_title('p2')
+        ax2.plot(times, [p[2]]*len(times), '-k')
+        ax2.fill_between(times, y1=p2, color='g', step='post', alpha=0.5)
+
+
+        ax3.set_title('p3')
+        ax3.plot(times, [p[3]]*len(times), '-k')
+        ax3.fill_between(times, y1=p3, color='y', step='post', alpha=0.5)
+
+        #fig.tight_layout()
+        plt.show()
+
     # STATS
     def generate(self):
         print('\n')
@@ -150,3 +221,7 @@ class Statistics:
         E_ver = self.get_e()
         P_ver = self.get_t()
         print(chisquare(E_ver, P_ver))
+        self.steady_test()
+
+    
+    
