@@ -24,19 +24,19 @@ class Statistics:
         self.__queue_time = np.array(data[3])
         self.__total_time = np.array(data[4])
 
-    def show_chart(self, values):
+    def show_chart(self, values , title):
         X = range(self.__m + self.__n + 1)
         fig, ax = plt.subplots(1, 1)
         ax.bar(X, values, width=0.1)
-        ax.set_title('Theoretical_histogram')
-        plt.show()
+        ax.set_title(title+'_Histogram')
+        # plt.figure()
 
     ##### E
     def get_e_prob(self):
         P = [len(self.__stat[self.__stat == index]) / len(self.__stat) for index in range(self.__n + self.__m + 1)]
         for index, p in enumerate(P):
             print('p{0}: {1}'.format(index, p))
-        self.show_chart(P)
+        # self.show_chart(P)
         return len(self.__stat[self.__stat == 0]) / len(self.__stat), len(
             self.__stat[self.__stat == self.__m + self.__n]) / len(self.__stat)
 
@@ -116,7 +116,7 @@ class Statistics:
     def steady_test(self):
         n, m, lambd, mu, v = 2, 1, 1 , 1, 1
         p = []
-        times = [i*50 for i in range(1,15)]
+        times = [i*30 for i in range(1,50)]
         p0, p1, p2, p3 = [],[],[],[]
         teta = lambd / mu
         beta = v / mu
@@ -170,8 +170,46 @@ class Statistics:
         ax3.plot(times, [p[3]]*len(times), '-k')
         ax3.fill_between(times, y1=p3, color='y', step='post', alpha=0.5)
 
-        #fig.tight_layout()
+        # fig.tight_layout()
         plt.show()
+
+    def sustainability_test(self,n, m, lambd, mu, v,time):
+        #n, m, lambd, mu, v = 2, 1, 1 , 1, 1
+        p = []
+        teta = lambd / mu
+        beta = v / mu
+        p = []
+        p.append(1 / (sum([(teta ** index) / math.factorial(index) for index in range(n + 1)]) + (
+                teta ** n) / math.factorial(n) * sum(
+            [(teta ** index) / np.prod(np.array([n + l * beta for l in range(1, index + 1)])) for index in
+             range(1, m + 1)])))
+        for index in range(1, n + 1):
+            p.append((p[0] * teta ** index) / math.factorial(index))
+        pn = p[-1]
+        for index in range(1, m + 1):
+            p.append(pn * (teta ** index) / np.prod(
+                np.array([n + l * beta for l in range(1, index + 1)])))
+
+        env = simpy.Environment()
+        model = Model.Model(lambd, mu, v, m, n, env)
+        env.run(time)
+        test_results = model.get_data()
+        __stat = np.array(test_results[0])
+        __queue_list = np.array(test_results[1])
+        __total_requests = np.array(test_results[2])
+        __queue_time = np.array(test_results[3])
+        __total_time = np.array(test_results[4])
+        empirical_characteristic = [len(__stat[__stat == index]) / len(__stat) for index in range(n + m + 1)]
+        X = range(m + n + 1)
+        fig,ax2 = plt.subplots(1, 1)
+        fig,ax1 = plt.subplots(1, 1)
+        ax1.bar(X, p, width=0.1)
+        ax1.set_title('Theoretical_Histogram') 
+        ax2.bar(X, empirical_characteristic, width=0.1)
+        ax2.set_title('Empirical_Histogram')  
+        print(chisquare(p, empirical_characteristic))
+        plt.show()
+
 
     # STATS
     def generate(self):
@@ -220,8 +258,12 @@ class Statistics:
 
         E_ver = self.get_e()
         P_ver = self.get_t()
+        self.show_chart(self.get_t(),"Theoretical")
+        self.show_chart(self.get_e(),"Empirical")
+        # plt.show()
         print(chisquare(E_ver, P_ver))
-        self.steady_test()
+        plt.show()
+        #self.steady_test()
 
     
     

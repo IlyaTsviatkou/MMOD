@@ -3,7 +3,7 @@ import Model
 import Statistics
 
 if __name__ == '__main__':
-    time = 1000
+    time = 100
     ######## values
     _lambda = 10
     mu = 3
@@ -17,5 +17,10 @@ if __name__ == '__main__':
     env.run(time)
 
     Statistic = Statistics.Statistics(_lambda, mu, v, m, n, model.get_data())
-    Statistic.generate()
+    Statistic.sustainability_test(2,3,10,3,6,100)
+    Statistic.sustainability_test(3,2,8,4,5,200)
+    Statistic.sustainability_test(4,1,6,2,4,300)
+    #Statistic.generate()
+    Statistic.steady_test()
+    
                     
